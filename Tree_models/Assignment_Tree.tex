@@ -1,0 +1,873 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdfauthor={Andreu Meca, Geraldo Gariza and Jan Leyva},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs}
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+
+\title{\textbf{Regression Trees Lab.}
+
+Universitat Politècnica de Catalunya}
+\author{Andreu Meca, Geraldo Gariza and Jan Leyva}
+\date{6 de maig, 2021}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\newpage
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{n <-}\StringTok{ }\KeywordTok{nrow}\NormalTok{(mydataset)}
+\NormalTok{p <-}\StringTok{ }\KeywordTok{ncol}\NormalTok{(mydataset)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{description-data}{%
+\section{Description data}\label{description-data}}
+
+The Molecular Taxonomy of Breast Cancer International Consortium
+(METABRIC) database is a Canada-UK Project which contains targeted
+sequencing data of 1,980 primary breast cancer samples. Clinical and
+genomic data was downloaded from cBioPortal. The dataset was collected
+by Professor Carlos Caldas from Cambridge Research Institute and
+Professor Sam Aparicio from the British Columbia Cancer Centre in Canada
+and published on Nature Communications (Pereira et al., 2016)..
+
+Metabric dataset integrates three types of data. Clinical data are in
+columns 1 to 31, gene expression data are in columns 32 to 520, mutation
+data are in columns 521 to 693. Gene expression values are normalized to
+be z-score.
+
+The data set has \textbf{1904} observations on \textbf{693} variables.
+
+The aim of this study is to predict the \texttt{overall\_survival} that
+specify if the patient is alive or dead. This will be done by three
+models (tree, a random forest and gradient boosting in the packege
+\texttt{adaboost}).
+
+\begin{itemize}
+\tightlist
+\item
+  Variability
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{sort}\NormalTok{(}\KeywordTok{apply}\NormalTok{(mydataset[,}\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{drop_na}\NormalTok{(), }\DecValTok{2}\NormalTok{, sd), }\DataTypeTok{decreasing =} \OtherTok{TRUE}\NormalTok{)[}\DecValTok{1}\OperatorTok{:}\DecValTok{6}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    nfkb1    ptprm   cyp3a7     e2f1   pdgfra     ubr5 
+## 1.000265 1.000265 1.000265 1.000264 1.000264 1.000264
+\end{verbatim}
+
+The top 3 variables with the most variability have 1.000265, which is
+just a prove that the variables are normalized to be z-score
+
+\begin{itemize}
+\tightlist
+\item
+  Percentage missing values
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{n_miss <-}\StringTok{ }\KeywordTok{c}\NormalTok{()}
+\ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\KeywordTok{ncol}\NormalTok{(mydataset))\{}
+\NormalTok{  n_miss[i]<-}\KeywordTok{length}\NormalTok{(}\KeywordTok{which}\NormalTok{(}\KeywordTok{is.na}\NormalTok{(mydataset[,i])))}
+\NormalTok{\}}
+\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\KeywordTok{t}\NormalTok{(n_miss[}\KeywordTok{which}\NormalTok{(n_miss }\OperatorTok{!=}\StringTok{ }\DecValTok{0}\NormalTok{)]), }\DataTypeTok{col.names =} \KeywordTok{which}\NormalTok{(n_miss }\OperatorTok{!=}\StringTok{ }\DecValTok{0}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrrrrrrrrrrrrrrr@{}}
+\toprule
+3 & 5 & 6 & 10 & 12 & 15 & 19 & 21 & 23 & 28 & 29 & 30 & 31 & 679 & 689
+& 691 & 693\tabularnewline
+\midrule
+\endhead
+22 & 15 & 54 & 30 & 72 & 15 & 106 & 45 & 15 & 204 & 20 & 501 & 1 & 7 & 2
+& 2 & 1\tabularnewline
+\bottomrule
+\end{longtable}
+
+Most of the missing values are on the first columns of the dataset, from
+1 to 32. On the figure 1 is possible see the missing percentage for the
+32 first columns.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{cat}\NormalTok{(}\StringTok{"The percentage of NA is:"}\NormalTok{, }\KeywordTok{round}\NormalTok{((}\KeywordTok{length}\NormalTok{(}\KeywordTok{which}\NormalTok{(n_miss }\OperatorTok{!=}\StringTok{ }\DecValTok{0}\NormalTok{))}\OperatorTok{/}\KeywordTok{ncol}\NormalTok{(mydataset)}\OperatorTok{*}\DecValTok{100}\NormalTok{),}\DecValTok{2}\NormalTok{),}\StringTok{"%"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## The percentage of NA is: 2.45 %
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{vis_miss}\NormalTok{(mydataset[,}\DecValTok{1}\OperatorTok{:}\DecValTok{32}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+\centering
+\includegraphics{Assignment-Tree_files/figure-latex/unnamed-chunk-4-1.pdf}
+\caption{Missing values Col 1 to 32}
+\end{figure}
+
+\hypertarget{preprocess}{%
+\section{Preprocess}\label{preprocess}}
+
+In this model is not needed a data preprocess.
+
+\hypertarget{partition-of-data}{%
+\section{Partition of data}\label{partition-of-data}}
+
+In order to properly evaluate the performance of a model, we must
+estimate the error rather than simply computing the training error. We
+split the observations into a training set and a test set, build the
+model using the training set, and evaluate its performance on the test
+data.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(params}\OperatorTok{$}\NormalTok{seed)}
+\NormalTok{data <-mydataset[, }\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{]}
+\NormalTok{data}\OperatorTok{$}\NormalTok{overall_survival <-}\StringTok{ }\NormalTok{mydataset}\OperatorTok{$}\NormalTok{overall_survival}
+\NormalTok{trainIndex <-}\StringTok{ }\KeywordTok{createDataPartition}\NormalTok{(data}\OperatorTok{$}\NormalTok{brca1, }\DataTypeTok{p =}\NormalTok{ params}\OperatorTok{$}\NormalTok{partition, }\DataTypeTok{list =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{times =} \DecValTok{1}\NormalTok{)}
+\NormalTok{train <-}\StringTok{ }\NormalTok{data[ trainIndex,]}
+\NormalTok{test  <-}\StringTok{ }\NormalTok{data[}\OperatorTok{-}\NormalTok{trainIndex,]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(params}\OperatorTok{$}\NormalTok{seed)}
+\NormalTok{data_split <-}\StringTok{ }\KeywordTok{initial_split}\NormalTok{(data, }\DataTypeTok{prop =}\NormalTok{ params}\OperatorTok{$}\NormalTok{partition)}
+\NormalTok{train <-}\StringTok{ }\KeywordTok{training}\NormalTok{(data_split)}
+\NormalTok{test  <-}\StringTok{ }\KeywordTok{testing}\NormalTok{(data_split)}
+\end{Highlighting}
+\end{Shaded}
+
+The train set has 1270 observations and the test set has 634.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Fit a pruned single tree model to predict the overall\_survival.
+  Assess the performance of the tree by using suitable metrics.
+  overall\_survival is a target variable whether the patient is alive or
+  dead. Additionally, you can adjust another model that adds some
+  clinical variable that you consider relevant to the prediction.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit <-}\StringTok{ }\KeywordTok{rpart}\NormalTok{(overall_survival}\OperatorTok{~}\NormalTok{., }\DataTypeTok{method=}\StringTok{"class"}\NormalTok{, }\DataTypeTok{data=}\NormalTok{train)}
+\NormalTok{fit_p <-}\StringTok{ }\KeywordTok{prune}\NormalTok{(fit, }\DataTypeTok{cp =}\NormalTok{ fit}\OperatorTok{$}\NormalTok{cptable[}\KeywordTok{which.min}\NormalTok{(fit}\OperatorTok{$}\NormalTok{cptable[,}\StringTok{"xerror"}\NormalTok{]),}\StringTok{"CP"}\NormalTok{])}
+\NormalTok{res_fit <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(fit_p, }\DataTypeTok{newdata =}\NormalTok{ test, }\DataTypeTok{type =} \StringTok{"class"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The package rpart fits a simple classification trees, which is stored in
+the variable fit and then it is pruned to not fall in an overfitting
+context. The prune is done minimizing the error given by the xerror
+parameter, computed with the cross-validation implementation.
+
+Then we predict using the test set and store it in the res\_fit object.
+
+Now, we compute the confusion matrix and the model accuracy.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{confusion_matrix}\NormalTok{(test}\OperatorTok{$}\NormalTok{overall_survival, }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{as.character}\NormalTok{(res_fit)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}lrr@{}}
+\toprule
+& Actual\_0 & Actual\_1\tabularnewline
+\midrule
+\endhead
+Predicted\_0 & 273 & 89\tabularnewline
+Predicted\_1 & 162 & 110\tabularnewline
+\bottomrule
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{accuracy}\NormalTok{(test}\OperatorTok{$}\NormalTok{overall_survival, }\KeywordTok{as.numeric}\NormalTok{(}\KeywordTok{as.character}\NormalTok{(res_fit)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Accuracy: 0.6041009
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  Fit a Random Forest (RF) classifier to predict the overall\_survival.
+  Tune the pa- rameters: number of trees and number of variables per
+  node, by implementing a grid search procedure. Assess the performance
+  of RF using suitable metrics. Determine which variables are the most
+  relevant in the overall\_survival prediction.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# colnames(train)}
+
+\NormalTok{bag.survival=}\KeywordTok{randomForest}\NormalTok{(}\DataTypeTok{x=}\NormalTok{mydataset[,}\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{],}\DataTypeTok{y=}\NormalTok{mydataset}\OperatorTok{$}\NormalTok{overall_survival,}\DataTypeTok{data=}\NormalTok{mydataset}
+\NormalTok{                          ,}\DataTypeTok{subset=}\NormalTok{train,}\DataTypeTok{importance=}\OtherTok{TRUE}\NormalTok{, }\DataTypeTok{proximity =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in randomForest.default(x = mydataset[, 32:520], y =
+## mydataset$overall_survival, : The response has five or fewer unique values. Are
+## you sure you want to do regression?
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bag.survival}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+##  randomForest(x = mydataset[, 32:520], y = mydataset$overall_survival,      importance = TRUE, proximity = TRUE, data = mydataset, subset = train) 
+##                Type of random forest: regression
+##                      Number of trees: 500
+## No. of variables tried at each split: 163
+## 
+##           Mean of squared residuals: 0.2233381
+##                     % Var explained: 8.36
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OBB.error<-bag.survival}\OperatorTok{$}\NormalTok{err.rate[}\KeywordTok{nrow}\NormalTok{(bag.survival}\OperatorTok{$}\NormalTok{err.rate),}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+We see the error rate is with the number of trees and the nº of
+variables tried at each split = 22. We can plot the forest in order to
+see in that number of trees is the optimum.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#We use the matrix of errors to make a visualization}
+\NormalTok{ntrees<-}\KeywordTok{nrow}\NormalTok{(bag.survival}\OperatorTok{$}\NormalTok{err.rate)}
+
+\NormalTok{oob.error.data<-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}
+  \DataTypeTok{Trees=}\KeywordTok{rep}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\NormalTok{ntrees, }\DataTypeTok{times=}\DecValTok{3}\NormalTok{),}
+  \DataTypeTok{Type=} \KeywordTok{rep}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\StringTok{"OOB"}\NormalTok{, }\StringTok{"0"}\NormalTok{, }\StringTok{"1"}\NormalTok{), }\DataTypeTok{each=}\NormalTok{ntrees),}
+  \DataTypeTok{Error=}\KeywordTok{c}\NormalTok{(bag.survival}\OperatorTok{$}\NormalTok{err.rate[,}\StringTok{"OOB"}\NormalTok{], }
+\NormalTok{          bag.survival}\OperatorTok{$}\NormalTok{err.rate[,}\StringTok{"0"}\NormalTok{], }
+\NormalTok{          bag.survival}\OperatorTok{$}\NormalTok{err.rate[,}\StringTok{"1"}\NormalTok{]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in 1:ntrees: argument of length 0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(}\DataTypeTok{data=}\NormalTok{oob.error.data, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{Trees, }\DataTypeTok{y=}\NormalTok{Error)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{Type))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in ggplot(data = oob.error.data, aes(x = Trees, y = Error)): object 'oob.error.data' not found
+\end{verbatim}
+
+Now, let's try if with a higher number of trees we obtain a better
+performance:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bag.survival2=}\KeywordTok{randomForest}\NormalTok{(}\DataTypeTok{x=}\NormalTok{mydataset[,}\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{],}\DataTypeTok{y=}\NormalTok{mydataset}\OperatorTok{$}\NormalTok{overall_survival,}\DataTypeTok{data=}\NormalTok{mydataset}
+\NormalTok{                          ,}\DataTypeTok{subset=}\NormalTok{train,}\DataTypeTok{importance=}\OtherTok{TRUE}\NormalTok{,}\DataTypeTok{ntree =} \DecValTok{1000}\NormalTok{ ,}\DataTypeTok{proximity =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in randomForest.default(x = mydataset[, 32:520], y =
+## mydataset$overall_survival, : The response has five or fewer unique values. Are
+## you sure you want to do regression?
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bag.survival2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+##  randomForest(x = mydataset[, 32:520], y = mydataset$overall_survival,      ntree = 1000, importance = TRUE, proximity = TRUE, data = mydataset,      subset = train) 
+##                Type of random forest: regression
+##                      Number of trees: 1000
+## No. of variables tried at each split: 163
+## 
+##           Mean of squared residuals: 0.2217049
+##                     % Var explained: 9.03
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OBB.error2<-bag.survival2}\OperatorTok{$}\NormalTok{err.rate[}\KeywordTok{nrow}\NormalTok{(bag.survival}\OperatorTok{$}\NormalTok{err.rate),}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+We see the error rate is with the number of trees and the nº of
+variables tried at each split = 22. We cannot guarantee a higher
+performance, thus we remain with .
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ntrees2<-}\KeywordTok{nrow}\NormalTok{(bag.survival2}\OperatorTok{$}\NormalTok{err.rate)}
+
+\NormalTok{oob.error.data2<-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}
+  \DataTypeTok{Trees=}\KeywordTok{rep}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\NormalTok{ntrees2, }\DataTypeTok{times=}\DecValTok{3}\NormalTok{),}
+  \DataTypeTok{Type=} \KeywordTok{rep}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\StringTok{"OOB"}\NormalTok{, }\StringTok{"0"}\NormalTok{, }\StringTok{"1"}\NormalTok{), }\DataTypeTok{each=}\NormalTok{ntrees2),}
+  \DataTypeTok{Error=}\KeywordTok{c}\NormalTok{(bag.survival2}\OperatorTok{$}\NormalTok{err.rate[,}\StringTok{"OOB"}\NormalTok{], }
+\NormalTok{          bag.survival2}\OperatorTok{$}\NormalTok{err.rate[,}\StringTok{"0"}\NormalTok{], }
+\NormalTok{          bag.survival2}\OperatorTok{$}\NormalTok{err.rate[,}\StringTok{"1"}\NormalTok{]))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in 1:ntrees2: argument of length 0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(}\DataTypeTok{data=}\NormalTok{oob.error.data2, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{Trees, }\DataTypeTok{y=}\NormalTok{Error)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{Type))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in ggplot(data = oob.error.data2, aes(x = Trees, y = Error)): object 'oob.error.data2' not found
+\end{verbatim}
+
+The plot represents stability with more than 500 trees.
+
+Now, let's try to change the nº of variables tried each split:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
+\NormalTok{oob.values <-}\StringTok{ }\KeywordTok{vector}\NormalTok{(}\DataTypeTok{length=}\DecValTok{25}\NormalTok{)}
+\ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \DecValTok{20}\OperatorTok{:}\DecValTok{25}\NormalTok{) \{}
+\NormalTok{  temp.model <-}\StringTok{ }\KeywordTok{randomForest}\NormalTok{(}\DataTypeTok{x=}\NormalTok{mydataset[,}\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{],}\DataTypeTok{y=}\NormalTok{mydataset}\OperatorTok{$}\NormalTok{overall_survival,}\DataTypeTok{data=}\NormalTok{mydataset}
+\NormalTok{                             ,}\DataTypeTok{subset=}\NormalTok{train,}\DataTypeTok{importance=}\OtherTok{TRUE}\NormalTok{,}\DataTypeTok{ntree =} \DecValTok{500}\NormalTok{ ,}\DataTypeTok{proximity =} \OtherTok{TRUE}\NormalTok{)}
+  
+\NormalTok{  oob.values[i] <-}\StringTok{ }\NormalTok{temp.model}\OperatorTok{$}\NormalTok{err.rate[}\KeywordTok{nrow}\NormalTok{(temp.model}\OperatorTok{$}\NormalTok{err.rate),}\DecValTok{1}\NormalTok{]}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in randomForest.default(x = mydataset[, 32:520], y =
+## mydataset$overall_survival, : The response has five or fewer unique values. Are
+## you sure you want to do regression?
+\end{verbatim}
+
+\begin{verbatim}
+## Error in oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate), : replacement has length zero
+\end{verbatim}
+
+We observe the minimum at position 24º therefore, we use the model as
+default:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{oob.values}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [25] FALSE
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{## find the minimum error}
+\NormalTok{oob.values<-}\DecValTok{1}\OperatorTok{-}\NormalTok{oob.values}
+
+\CommentTok{## find the optimal value for mtry...}
+\KeywordTok{which}\NormalTok{(oob.values }\OperatorTok{==}\StringTok{ }\KeywordTok{min}\NormalTok{(oob.values))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{## create a model for proximities using the best value for mtry}
+\NormalTok{model <-}\StringTok{ }\KeywordTok{randomForest}\NormalTok{(}\DataTypeTok{x=}\NormalTok{mydataset[,}\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{],}\DataTypeTok{y=}\NormalTok{mydataset}\OperatorTok{$}\NormalTok{overall_survival,}\DataTypeTok{data=}\NormalTok{mydataset}
+\NormalTok{                      ,}\DataTypeTok{subset=}\NormalTok{train,}\DataTypeTok{importance=}\OtherTok{TRUE}\NormalTok{,}\DataTypeTok{ntree =} \DecValTok{500}\NormalTok{ ,}\DataTypeTok{proximity =} \OtherTok{TRUE}
+\NormalTok{                      ,}\DataTypeTok{mtry=}\KeywordTok{which}\NormalTok{(oob.values }\OperatorTok{==}\StringTok{ }\KeywordTok{min}\NormalTok{(oob.values)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in randomForest.default(x = mydataset[, 32:520], y =
+## mydataset$overall_survival, : The response has five or fewer unique values. Are
+## you sure you want to do regression?
+\end{verbatim}
+
+We are going to calculate the confusion matrix for the test sample:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{model}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+##  randomForest(x = mydataset[, 32:520], y = mydataset$overall_survival,      ntree = 500, mtry = which(oob.values == min(oob.values)),      importance = TRUE, proximity = TRUE, data = mydataset, subset = train) 
+##                Type of random forest: regression
+##                      Number of trees: 500
+## No. of variables tried at each split: 1
+## 
+##           Mean of squared residuals: 0.2286382
+##                     % Var explained: 6.18
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{yhat.bag =}\StringTok{ }\KeywordTok{predict}\NormalTok{(model,}\DataTypeTok{newdata=}\NormalTok{test[,}\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error: Can't subset columns that don't exist.
+## [31mx[39m Locations 491, 492, 493, 494, 495, etc. don't exist.
+## [34mi[39m There are only 490 columns.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{conf.matrix.rf<-}\KeywordTok{confusionMatrix}\NormalTok{(}\KeywordTok{as.factor}\NormalTok{(yhat.bag), }
+                                \KeywordTok{as.factor}\NormalTok{(test}\OperatorTok{$}\NormalTok{overall_survival))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in is.factor(x): object 'yhat.bag' not found
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{conf.matrix.rf}\OperatorTok{$}\NormalTok{table; conf.matrix.rf}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in eval(expr, envir, enclos): object 'conf.matrix.rf' not found
+\end{verbatim}
+
+\begin{verbatim}
+## Error in eval(expr, envir, enclos): object 'conf.matrix.rf' not found
+\end{verbatim}
+
+We use the varImplot function to see the importance of the variables:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{varImpPlot}\NormalTok{(model)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Assignment-Tree_files/figure-latex/unnamed-chunk-16-1.pdf}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Apply the gradient boosting algorithm with adaboost specification:
+\end{enumerate}
+
+5.1. Using stumps as classification trees for \texttt{overall\_survival}
+prediction, compute the misclassification rates of both the learning set
+and the test set across 2,000 iterations of gbm. Represent graphically
+the error as a function of the number of boosting iterations.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{boost_model=}\KeywordTok{gbm}\NormalTok{(overall_survival}\OperatorTok{~}\NormalTok{.,}
+                \DataTypeTok{data =}\NormalTok{ train, }
+                \DataTypeTok{distribution=}\StringTok{"adaboost"}\NormalTok{, }
+                \DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{interaction.depth=}\DecValTok{1}\NormalTok{, }
+                \DataTypeTok{cv.folds =} \DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The package \texttt{gbm} have the distribution \texttt{adaboost} that
+perform the adaboost algorithm. In this case is a model with a 2000
+trees of one deep each one (stumps). Also, it is used a cv.folds = 3.
+
+\begin{itemize}
+\tightlist
+\item
+  Represent graphically the error as a function of the number of
+  boosting iterations.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{(perf<-}\KeywordTok{gbm.perf}\NormalTok{(boost_model))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Assignment-Tree_files/figure-latex/unnamed-chunk-18-1.pdf}
+
+\begin{verbatim}
+## [1] 41
+\end{verbatim}
+
+The gbm.perf return a plot where is specify the number of iterations
+need it in order to get a good performance. In this case the number of
+iterations for got a similar results that done with 2000 trees is 41. It
+means that if we perform again the \texttt{adaboost} but this time with
+\texttt{n.trees=} 41 we should get a similar results that the obtaineds
+with 2000.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{boost_predict_train=}\KeywordTok{predict}\NormalTok{(boost_model,}\DataTypeTok{newdata=}\NormalTok{train,}
+                         \DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{conf_matr_train<-}\KeywordTok{confusionMatrix}\NormalTok{(}\KeywordTok{as.factor}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict_train)), }
+                \KeywordTok{as.factor}\NormalTok{(train}\OperatorTok{$}\NormalTok{overall_survival))}
+\NormalTok{conf_matr_train}\OperatorTok{$}\NormalTok{table; conf_matr_train}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           Reference
+## Prediction   0   1
+##          0 741   0
+##          1   0 529
+\end{verbatim}
+
+\begin{verbatim}
+## Accuracy 
+##        1
+\end{verbatim}
+
+As expected the performance with the same data that the algorithm is
+trained the performance is perfect with a 0 error rate. This is one of
+the problems of adaboost that tends to overfit the data, for this reason
+is used a split data in train and test.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{boost_predict=}\KeywordTok{predict}\NormalTok{(boost_model,}\DataTypeTok{newdata=}\NormalTok{test,}
+                         \DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{conf_matr<-}\KeywordTok{confusionMatrix}\NormalTok{(}\KeywordTok{as.factor}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict)), }
+                \KeywordTok{as.factor}\NormalTok{(test}\OperatorTok{$}\NormalTok{overall_survival))}
+\NormalTok{conf_matr}\OperatorTok{$}\NormalTok{table; conf_matr}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           Reference
+## Prediction   0   1
+##          0 266 151
+##          1  96 121
+\end{verbatim}
+
+\begin{verbatim}
+##  Accuracy 
+## 0.6104101
+\end{verbatim}
+
+The performance when is predicted the test data set is 0.6104101.
+
+\hypertarget{prediction}{%
+\section{Prediction}\label{prediction}}
+
+5.2. Compare the test-set misclassification rates attained by different
+ensemble classifiers based on trees with maximum depth: stumps, 4-node
+trees, 8-node trees, and 16-node trees.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{boost_model_}\DecValTok{4}\NormalTok{=}\KeywordTok{gbm}\NormalTok{(overall_survival}\OperatorTok{~}\NormalTok{.,}\DataTypeTok{data=}\NormalTok{ train, }
+                  \DataTypeTok{distribution=}\StringTok{"adaboost"}\NormalTok{, }\DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }
+                  \DataTypeTok{interaction.depth=}\DecValTok{4}\NormalTok{, }\DataTypeTok{cv.folds =} \DecValTok{3}\NormalTok{)}
+\NormalTok{boost_predict_}\DecValTok{4}\NormalTok{ =}\KeywordTok{predict}\NormalTok{(boost_model_}\DecValTok{4}\NormalTok{,}\DataTypeTok{newdata=}\NormalTok{test,}
+                         \DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{conf_matr_}\DecValTok{4}\NormalTok{ <-}\StringTok{ }\KeywordTok{confusionMatrix}\NormalTok{(}\KeywordTok{as.factor}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict_}\DecValTok{4}\NormalTok{)), }
+                \KeywordTok{as.factor}\NormalTok{(test}\OperatorTok{$}\NormalTok{overall_survival))}
+\NormalTok{conf_matr_}\DecValTok{4}\OperatorTok{$}\NormalTok{table; conf_matr_}\DecValTok{4}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           Reference
+## Prediction   0   1
+##          0 269 141
+##          1  93 131
+\end{verbatim}
+
+\begin{verbatim}
+##  Accuracy 
+## 0.6309148
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict_}\DecValTok{4}\NormalTok{) }\OperatorTok{!=}\StringTok{ }\NormalTok{test}\OperatorTok{$}\NormalTok{overall_survival)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.3690852
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{boost_model_}\DecValTok{8}\NormalTok{=}\KeywordTok{gbm}\NormalTok{(train}\OperatorTok{$}\NormalTok{overall_survival}\OperatorTok{~}\NormalTok{.,}\DataTypeTok{data=}\NormalTok{ (train), }\DataTypeTok{distribution=}\StringTok{"adaboost"}\NormalTok{, }\DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{interaction.depth=}\DecValTok{8}\NormalTok{, }\DataTypeTok{cv.folds =} \DecValTok{3}\NormalTok{)}
+\NormalTok{boost_predict_}\DecValTok{8}\NormalTok{ =}\KeywordTok{predict}\NormalTok{(boost_model_}\DecValTok{8}\NormalTok{,}\DataTypeTok{newdata=}\NormalTok{test,}
+                         \DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\NormalTok{conf_matr_}\DecValTok{8}\NormalTok{ <-}\StringTok{ }\KeywordTok{confusionMatrix}\NormalTok{(}\KeywordTok{as.factor}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict_}\DecValTok{8}\NormalTok{)), }
+                \KeywordTok{as.factor}\NormalTok{(test}\OperatorTok{$}\NormalTok{overall_survival))}
+\NormalTok{conf_matr_}\DecValTok{8}\OperatorTok{$}\NormalTok{table; conf_matr_}\DecValTok{8}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           Reference
+## Prediction   0   1
+##          0 275 142
+##          1  87 130
+\end{verbatim}
+
+\begin{verbatim}
+##  Accuracy 
+## 0.6388013
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict_}\DecValTok{8}\NormalTok{) }\OperatorTok{!=}\StringTok{ }\NormalTok{test}\OperatorTok{$}\NormalTok{overall_survival)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.3611987
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#summary(boost_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{boost_model_}\DecValTok{16}\NormalTok{=}\KeywordTok{gbm}\NormalTok{(train}\OperatorTok{$}\NormalTok{overall_survival}\OperatorTok{~}\NormalTok{.,}\DataTypeTok{data=}\NormalTok{ (train[, }\DecValTok{32}\OperatorTok{:}\DecValTok{520}\NormalTok{]), }\DataTypeTok{distribution=}\StringTok{"adaboost"}\NormalTok{, }\DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{interaction.depth=}\DecValTok{16}\NormalTok{, }\DataTypeTok{cv.folds =} \DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error: Can't subset columns that don't exist.
+## [31mx[39m Locations 491, 492, 493, 494, 495, etc. don't exist.
+## [34mi[39m There are only 490 columns.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{boost_predict_}\DecValTok{16}\NormalTok{ =}\KeywordTok{predict}\NormalTok{(boost_model_}\DecValTok{16}\NormalTok{,}\DataTypeTok{newdata=}\NormalTok{test,}
+                         \DataTypeTok{n.trees=}\DecValTok{2000}\NormalTok{, }\DataTypeTok{type =} \StringTok{"response"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in predict(boost_model_16, newdata = test, n.trees = 2000, type = "response"): object 'boost_model_16' not found
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{conf_matr_}\DecValTok{16}\NormalTok{ <-}\StringTok{ }\KeywordTok{confusionMatrix}\NormalTok{(}\KeywordTok{as.factor}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict_}\DecValTok{16}\NormalTok{)), }
+                \KeywordTok{as.factor}\NormalTok{(test}\OperatorTok{$}\NormalTok{overall_survival))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in is.factor(x): object 'boost_predict_16' not found
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{conf_matr_}\DecValTok{16}\OperatorTok{$}\NormalTok{table; conf_matr_}\DecValTok{16}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in eval(expr, envir, enclos): object 'conf_matr_16' not found
+\end{verbatim}
+
+\begin{verbatim}
+## Error in eval(expr, envir, enclos): object 'conf_matr_16' not found
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{mean}\NormalTok{(}\KeywordTok{round}\NormalTok{(boost_predict_}\DecValTok{16}\NormalTok{) }\OperatorTok{!=}\StringTok{ }\NormalTok{test}\OperatorTok{$}\NormalTok{overall_survival)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in mean(round(boost_predict_16) != test$overall_survival): object 'boost_predict_16' not found
+\end{verbatim}
+
+\textbf{Summary table}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{kable}\NormalTok{(}\KeywordTok{matrix}\NormalTok{(}\KeywordTok{c}\NormalTok{(}\StringTok{"Stump"}\NormalTok{, }\StringTok{"4-node trees"}\NormalTok{, }\StringTok{"8-node trees"}\NormalTok{, }\StringTok{"16-node trees"}\NormalTok{,conf_matr}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{],conf_matr_}\DecValTok{4}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{],conf_matr_}\DecValTok{8}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{],conf_matr_}\DecValTok{16}\OperatorTok{$}\NormalTok{overall[}\DecValTok{1}\NormalTok{]),}\DecValTok{4}\NormalTok{,}\DecValTok{2}\NormalTok{), }\DataTypeTok{col.names =} \KeywordTok{c}\NormalTok{(}\StringTok{"Deep"}\NormalTok{, }\StringTok{"Accuracy"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Error in matrix(c("Stump", "4-node trees", "8-node trees", "16-node trees", : object 'conf_matr_16' not found
+\end{verbatim}
+
+As we can see the difference between use stump or 16 node trees is not
+to much. For this could be because with one stump we got a overfitting
+to train dataset and is not need to increase the deep of nodes.
+
+\end{document}

@@ -1,0 +1,458 @@
+---
+title: "**Regression Trees Lab.** \n \n Universitat Politècnica de Catalunya"
+date: '`r format(Sys.Date(),"%e de %B, %Y")`'
+author: '`r params$author`'
+output:
+  html_document:
+    theme: united
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    number_sections: yes
+    toc: yes
+params:
+  show_code: TRUE
+  seed: 1234
+  author: 'Andreu Meca, Geraldo Gariza and Jan Leyva'
+  partition: 0.6666666666666666666667
+  myDescription: 'The Molecular Taxonomy of Breast Cancer International Consortium (METABRIC) database is a Canada-UK Project which contains targeted sequencing data of 1,980 primary breast cancer samples. Clinical and genomic data was downloaded from cBioPortal. The dataset was collected by Professor Carlos Caldas from Cambridge Research Institute and Professor Sam Aparicio from the British Columbia Cancer Centre in Canada and published on Nature Communications (Pereira et al., 2016).'
+  dataset: "METABRIC_RNA_Mutation.csv"
+#bibliography: scholar.bib  
+---
+
+
+\newpage
+
+```{r setup_rmd, include=FALSE,echo=FALSE}
+knitr::opts_chunk$set(echo = params$show_code)
+knitr::opts_chunk$set(error = TRUE)
+```
+
+
+```{r packages, include=FALSE}
+# If the package is not installed then it will be installed
+if(!require("knitr")) install.packages("knitr")
+if(!require("tree")) install.packages("tree")
+if(!require("ISLR")) install.packages("ISLR")
+if(!require("MASS")) install.packages("MASS")
+if(!require("caret")) install.packages("caret")
+if(!require("naniar")) install.packages("naniar")
+if(!require("tidymodels")) install.packages("tidymodels")
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("ggplot2")) install.packages("ggplot2")
+if(!require("ISLR")) install.packages("ISLR")
+library("ISLR")
+if(!require("gbm")) install.packages("gbm")
+library("gbm")
+if(!require("pROC")) install.packages("pROC")
+if(!require("rpart")) install.packages("rpart")
+if(!require("randomForest")) install.packages("randomForest")
+if(!require("e1071")) install.packages("e1071")
+if(!require("xgboost")) install.packages("xgboost")
+
+library("pROC")
+require("knitr")
+require("tree")
+require("ISLR")
+require("MASS")
+require("caret")
+require("tidyverse")
+require("tidymodels")
+require("naniar")
+require("rpart")
+require("randomForest")
+require("e1071")
+require("xgboost")
+
+```
+
+```{r, include=FALSE}
+confusion_matrix <- function(actual, predict, cut = 0.5){
+  #format actual vector
+  actual <- as_tibble(actual)
+  colnames(actual)[1] <- "actual"
+  #format predict vector
+  predict <- as_tibble(predict)
+  colnames(predict)[1] <- "predict"
+  #compute misclassification rate
+  df <- bind_cols(actual, predict) %>% 
+    mutate(predict = ifelse(predict >= cut,
+                           1,
+                           0))
+  
+  matrix <- data.frame("Actual_0" = c(0, 0), "Actual_1" = c(0, 0), row.names = c("Predicted_0", "Predicted_1"))
+  
+  matrix[1, 1] <- nrow(filter(df, actual == 0 & predict == 0))
+  matrix[1, 2] <- nrow(filter(df, actual == 0 & predict == 1))
+  matrix[2, 1] <- nrow(filter(df, actual == 1 & predict == 0))
+  matrix[2, 2] <- nrow(filter(df, actual == 1 & predict == 1))
+  
+  knitr::kable(matrix)
+  
+}
+
+accuracy <- function(actual, predict, cut = 0.5){
+  #format actual vector
+  actual <- as_tibble(actual)
+  colnames(actual)[1] <- "actual"
+  #format predict vector
+  predict <- as_tibble(predict)
+  colnames(predict)[1] <- "predict"
+  #compute misclassification rate
+  df <- bind_cols(actual, predict) %>% 
+    mutate(predict = ifelse(predict >= cut,
+                           1,
+                           0))
+  
+  matrix <- data.frame("Actual_0" = c(0, 0), "Actual_1" = c(0, 0), row.names = c("Predicted_0", "Predicted_1"))
+  
+  matrix[1, 1] <- nrow(filter(df, actual == 0 & predict == 0))
+  matrix[1, 2] <- nrow(filter(df, actual == 0 & predict == 1))
+  matrix[2, 1] <- nrow(filter(df, actual == 1 & predict == 0))
+  matrix[2, 2] <- nrow(filter(df, actual == 1 & predict == 1))
+  
+  knitr::kable(matrix)
+  
+  cat("Accuracy:", 
+      (matrix[1, 1] + matrix[2, 2]) / (matrix[1, 1] + matrix[2, 2] + matrix[1, 2] + matrix[2, 1]))
+  
+}
+```
+
+
+```{r assignments, include=FALSE}
+# In this chunk, you do the assignment of values to R variables
+# This code must be adapted to any change of values of R variables
+mydataset <- read_csv("METABRIC_RNA_Mutation.csv")
+```
+
+
+```{r, dataDescription}
+n <- nrow(mydataset)
+p <- ncol(mydataset)
+
+mydataset$overall_survival<- (mydataset$overall_survival)
+```
+
+# Description data
+
+
+`r params$myDescription`. 
+
+Metabric dataset integrates three types of data. Clinical data are in columns 1 to 31, gene
+expression data are in columns 32 to 520, mutation data are in columns 521 to 693. Gene
+expression values are normalized to be z-score.
+
+The data set has **`r n`** observations on **`r p`** variables.
+
+The aim of this study is to predict the `overall_survival` that specify if the 
+patient is alive or dead. This will be done by three models (tree, a random forest and gradient boosting in the packege `adaboost`).  
+
+
+* Variability
+
+```{r}
+sort(apply(mydataset[,32:520] %>% drop_na(), 2, sd), decreasing = TRUE)[1:6]
+```
+
+The top 3 variables with the most variability have 1.000265, which is just a prove that the variables are normalized to be z-score
+
+* Percentage missing values
+
+```{r}
+n_miss <- c()
+for(i in 1:ncol(mydataset)){
+  n_miss[i]<-length(which(is.na(mydataset[,i])))
+}
+knitr::kable(t(n_miss[which(n_miss != 0)]), col.names = which(n_miss != 0))
+```
+
+
+
+Most of the missing values are on the first columns of the dataset, from 1 to 32. On the figure 1 is possible see the missing percentage for the 32 first columns.  
+
+```{r, fig.cap= "Missing values Col 1 to 32"}
+cat("The percentage of NA is:", round((length(which(n_miss != 0))/ncol(mydataset)*100),2),"%")
+vis_miss(mydataset[,1:32])
+```
+
+# Preprocess
+
+
+In this model is not needed a data preprocess. 
+
+
+# Partition of data
+
+In order to properly evaluate the performance of a model, we must estimate the error rather than simply computing the training error. We split the observations into a training set and a test set, build the model using the training set, and evaluate its performance on the test data.
+
+
+```{r, dataPartition}
+set.seed(params$seed)
+data <-mydataset[, 32:520]
+data$overall_survival <- (mydataset$overall_survival)
+# trainIndex <- createDataPartition(data$brca1, p = params$partition, list = FALSE, times = 1)
+```
+
+
+```{r}
+set.seed(params$seed)
+data_split <- initial_split(data, prop = params$partition)
+train <- training(data_split)
+test  <- testing(data_split)
+```
+
+The train set has `r nrow(train)` observations and the test set has `r nrow(test)`.
+
+3. Fit a pruned single tree model to predict the overall_survival. Assess the performance of the tree by using suitable metrics. overall_survival is a target variable whether the patient is alive or dead. Additionally, you can adjust another model that adds some clinical variable that you consider relevant to the prediction.
+
+```{r}
+fit <- rpart(overall_survival~., method="class", data=train)
+fit_p <- prune(fit, cp = fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
+res_fit <- predict(fit_p, newdata = test, type = "class")
+```
+
+The package rpart fits a simple classification trees, which is stored in the variable fit and then it is pruned to not fall in an overfitting context. The prune is done minimizing the error given by the xerror parameter, computed with the cross-validation implementation. 
+
+Then we predict using the test set and store it in the res_fit object.
+
+Now, we compute the confusion matrix and the model accuracy.
+
+```{r}
+confusion_matrix(test$overall_survival, as.numeric(as.character(res_fit)))
+```
+
+```{r}
+accuracy(test$overall_survival, as.numeric(as.character(res_fit)))
+```
+
+4. Fit a Random Forest (RF) classifier to predict the overall_survival. Tune the pa- rameters: number of trees and number of variables per node, by implementing a grid search procedure. Assess the performance of RF using suitable metrics. Determine which variables are the most relevant in the overall_survival prediction.
+
+```{r}
+bag.survival=randomForest(x=select(train, -overall_survival), y=as.factor(train$overall_survival),data=train,importance=TRUE, proximity = TRUE)
+
+bag.survival
+
+OBB.error<-bag.survival$err.rate[nrow(bag.survival$err.rate),1]
+```
+
+We see the error rate is `r OBB.error` with the number of trees `r nrow(bag.survival$err.rate)` and the nº of variables tried at each split = 22. We can plot the forest in order to see in that number of trees `r nrow(bag.survival$err.rate)` is the optimum.
+
+
+```{r}
+#We use the matrix of errors to make a visualization
+ntrees<-nrow(bag.survival$err.rate)
+
+oob.error.data<- data.frame(
+  Trees=rep(1:ntrees, times=3),
+  Type= rep(c("OOB", "0", "1"), each=ntrees),
+  Error=c(bag.survival$err.rate[,"OOB"], 
+          bag.survival$err.rate[,"0"], 
+          bag.survival$err.rate[,"1"]))
+
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+
+
+```
+
+Now, let's try if with a higher number of trees we obtain a better performance:
+
+```{r}
+
+bag.survival2=randomForest(x=select(train, -overall_survival), y=as.factor(train$overall_survival),data=train, importance=TRUE,ntree = 1000 ,proximity = TRUE)
+
+bag.survival2
+
+OBB.error2<-bag.survival2$err.rate[nrow(bag.survival$err.rate),1]
+```
+
+We see the error rate is `r OBB.error2` with the number of trees `r nrow(bag.survival2$err.rate)` and the nº of variables tried at each split = 22. We cannot guarantee a higher performance, thus we remain with `r nrow(bag.survival$err.rate)`.
+
+```{r}
+ntrees2<-nrow(bag.survival2$err.rate)
+
+oob.error.data2<- data.frame(
+  Trees=rep(1:ntrees2, times=3),
+  Type= rep(c("OOB", "0", "1"), each=ntrees2),
+  Error=c(bag.survival2$err.rate[,"OOB"], 
+          bag.survival2$err.rate[,"0"], 
+          bag.survival2$err.rate[,"1"]))
+
+
+ggplot(data=oob.error.data2, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+
+```
+The plot represents stability with more than 500 trees. 
+
+
+Now, let's try to change the nº of variables tried each split:
+  
+```{r}
+set.seed(1234)
+oob.values <- vector(length=25)
+for(i in 20:25) {
+  temp.model <- randomForest(x=select(train, -overall_survival), y=as.factor(train$overall_survival),data=train,importance=TRUE,ntree = 500 ,proximity = TRUE)
+  
+  oob.values[i] <- temp.model$err.rate[nrow(temp.model$err.rate),1]
+}
+
+```
+
+We observe the minimum at position 24º therefore, we use the model as default:
+  
+```{r}
+
+oob.values
+## find the minimum error
+oob.values<-1-oob.values
+
+## find the optimal value for mtry...
+which(oob.values == min(oob.values))
+
+
+## create a model for proximities using the best value for mtry
+model <- randomForest(x=select(train, -overall_survival), y=as.factor(data$overall_survival),data=train,importance=TRUE,ntree = 500 ,proximity = TRUE
+                      ,mtry=which(oob.values == min(oob.values)))
+```
+```{r}
+
+oob.values
+## find the minimum error
+oob.values<-1-oob.values
+
+## find the optimal value for mtry...
+which(oob.values == min(oob.values))
+
+
+## create a model for proximities using the best value for mtry
+model <- randomForest(x=select(train, -overall_survival), y=as.factor(train$overall_survival),data=train,importance=TRUE,ntree = 500 ,proximity = TRUE
+                      ,mtry=which(oob.values == min(oob.values)))
+model
+```
+
+We are going to calculate the confusion matrix for the test sample:
+  
+```{r}
+yhat.bag = predict(model,newdata=test)
+
+
+
+conf.matrix.rf<-confusionMatrix(as.factor(yhat.bag), 
+                                as.factor(test$overall_survival))
+
+
+conf.matrix.rf$table; conf.matrix.rf$overall[1]
+```
+
+
+We use the varImplot function to see the importance of the variables:
+  
+```{r}
+varImpPlot(model)
+```
+
+
+5. Apply the gradient boosting algorithm with adaboost specification:
+
+5.1. Using stumps as classification trees for `overall_survival` prediction, compute the misclassification rates of both the learning set and the test set across 2,000 iterations of gbm. Represent graphically the error as a function of the number of boosting iterations.
+
+```{r warning=FALSE}
+boost_model=gbm((overall_survival)~.,
+                data = train,
+                distribution="adaboost", 
+                n.trees=2000, interaction.depth=1, 
+                cv.folds = 3)
+```
+
+The package `gbm` have the distribution `adaboost` that perform the adaboost algorithm. In this case is a model with a 2000 trees of one deep each one (stumps). Also, it is used a cv.folds = 3.
+
+* Represent graphically the error as a function of the number of boosting iterations.
+
+```{r warning=FALSE}
+(perf<-gbm.perf(boost_model))
+```
+
+The gbm.perf return a plot where is specify the number of iterations need it in order to get a good performance. In this case the number of iterations for got a similar results that done with 2000 trees is `r perf[1]`. It means that if we perform again the `adaboost` but this time with `n.trees=` `r perf[1]` we should get a similar results that the obtaineds with 2000.
+
+```{r}
+boost_predict_train=predict(boost_model,newdata=train,
+                         n.trees=2000, type = "response")
+conf_matr_train<-confusionMatrix(as.factor(round(boost_predict_train)), 
+                as.factor(train$overall_survival))
+conf_matr_train$table; conf_matr_train$overall[1]
+```
+
+As expected the performance with the same data that the algorithm is trained the performance is perfect with a 0 error rate. This is one of the problems of adaboost that tends to overfit the data, for this reason is used a split data in train and test.
+
+
+```{r}
+boost_predict=predict(boost_model,newdata=test,
+                         n.trees=2000, type = "response")
+conf_matr<-confusionMatrix(as.factor(round(boost_predict)), 
+                as.factor(test$overall_survival))
+conf_matr$table; conf_matr$overall[1]
+```
+
+The performance when is predicted the test data set is `r conf_matr$overall[1]`.
+
+
+# Prediction
+
+5.2. Compare the test-set misclassification rates attained by different ensemble classifiers based on trees with maximum depth: stumps, 4-node trees, 8-node trees, and 16-node trees.
+
+
+```{r}
+boost_model_4=gbm(overall_survival~.,data= train, 
+                  distribution="adaboost", n.trees=2000, 
+                  interaction.depth=4, cv.folds = 3)
+boost_predict_4 =predict(boost_model_4,newdata=test,
+                         n.trees=2000, type = "response")
+conf_matr_4 <- confusionMatrix(as.factor(round(boost_predict_4)), 
+                as.factor(test$overall_survival))
+conf_matr_4$table; conf_matr_4$overall[1]
+mean(round(boost_predict_4) != test$overall_survival)
+```
+
+```{r}
+boost_model_8=gbm(train$overall_survival~.,data= (train), distribution="adaboost", n.trees=2000, interaction.depth=8, cv.folds = 3)
+boost_predict_8 =predict(boost_model_8,newdata=test,
+                         n.trees=2000, type = "response")
+conf_matr_8 <- confusionMatrix(as.factor(round(boost_predict_8)), 
+                as.factor(test$overall_survival))
+conf_matr_8$table; conf_matr_8$overall[1]
+mean(round(boost_predict_8) != test$overall_survival)
+#summary(boost_model)
+```
+
+```{r}
+boost_model_16=gbm(train$overall_survival~.,data= train, distribution="adaboost", n.trees=2000, interaction.depth=16, cv.folds = 3)
+boost_predict_16 =predict(boost_model_16,newdata=test,
+                         n.trees=2000, type = "response")
+conf_matr_16 <- confusionMatrix(as.factor(round(boost_predict_16)), 
+                as.factor(test$overall_survival))
+conf_matr_16$table; conf_matr_16$overall[1]
+mean(round(boost_predict_16) != test$overall_survival)
+```
+
+
+**Summary table**
+
+```{r table}
+kable(matrix(c("Stump", "4-node trees", "8-node trees", "16-node trees",conf_matr$overall[1],conf_matr_4$overall[1],conf_matr_8$overall[1],conf_matr_16$overall[1]),4,2), col.names = c("Deep", "Accuracy"))
+```
+
+As we can see the difference between use stump or 16 node trees is not to much. For this could be because with one stump we got a overfitting to train dataset and is not need to increase the deep of nodes.
+
+
+## Extensio - Gradient boosting with xgboost
+
+```{r xgboost}
+boost_model_16=gbm(train$overall_survival~.,data= train, distribution="adaboost", n.trees=2000, interaction.depth=16, cv.folds = 3)
+
+
+```
+
