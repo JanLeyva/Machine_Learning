@@ -1,0 +1,272 @@
+---
+title: " **Lasso estimation in multiple linear regression**  \n  \n  Universitat Politècnica de Catalunya  "
+date: '`r format(Sys.Date(),"%e de %B, %Y")`'
+author: '`r params$author`'
+output:
+  html_document:
+    theme: united
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    number_sections: yes
+    toc: yes
+params:
+  show_code: TRUE
+  seed: 1234
+  author: 'Andreu Meca, Geraldo Gariza and Jan Leyva'
+  partition: 0.5
+  #myDescription: 'The data are real data of housing values in suburbs of Boston [@harrison1978hedonic; @belsley2005regression]'
+  dataset: Boston
+#bibliography: scholar.bib  
+---
+
+```{r setup_rmd, include=FALSE}
+knitr::opts_chunk$set(echo = params$show_code)
+```
+
+
+# Lasso for the Boston Housing data
+
+```{r include=FALSE}
+load("boston.Rdata")
+library(glmnet)
+library(ggplot2)
+library(readr)
+```
+
+
+
+## For the Boston House-price corrected dataset use Lasso estimation (in glmnet) to t the regression model where the response is CMEDV (the corrected version of MEDV) and the explanatory variables are the remaining 13 variables in the previous list. Try to provide an interpretation to the estimated model.
+
+
+```{r include=FALSE}
+boston.c$CHAS <- as.numeric(boston.c$CHAS)  # transform in numeric variable
+X <- as.matrix(boston.c[,8:20])
+Y <- as.matrix(boston.c[,7])
+```
+
+
+```{r, echo=TRUE}
+lasso.1 <- glmnet(X, Y, standardize=TRUE, intercept=FALSE)
+cv.lasso.1 <- cv.glmnet(X,Y, standardize=TRUE, intercept=FALSE,nfolds=10)
+
+plot(cv.lasso.1)
+plot(lasso.1, xvar="lambda")
+abline(v=log(cv.lasso.1$lambda.min),col=2,lty=2)
+abline(v=log(cv.lasso.1$lambda.1se),col=2,lty=2)
+```
+
+First graphic:   
+
+As it can be seen, the log($\lambda$) minimum is near -4 (first vertical doted line). Moreover the 1se (one standard error) $\lambda$ has a log($\lambda$) almos 0 (negative).
+Hence there is a broad number of able lok($\lambda$). Using the 1se log($\lambda$) bestow a difference of 13 - 6 = 7 coefficients. Hence using the almost 0 log($\lambda$)
+allows for a easier to interpret model while being significantly equivalent.
+
+Second graphics:  
+
+
+This graphic allows to determine which variables enables for a better model keeping the prediction capacity while being elastic enough.
+In the minimum log($\lambda$) there are three non 0 coeficients (CHAS, NOX, RM). As the log($\lambda$) value increases until matching the 1se log($\lambda$) one of the coefficients (the one with negative value, NOX) goes to 0. Therefore there are only 2 coefficients left with a non 0 value. It can be observed that soon after the 1se, one of the coefficients (CHAS) goes to 0 too. This can be a signal that this coefficient is relevant enough for the correct fitting of the model. So maybe without it, and having only the RM to model, it would deviate too  much.
+The coefficient of greater value (RM) changes very little througout the different log($\lambda$) values.
+From a less formal perspective we can see a logic in this correlation since RM (number of rooms) is a trusty indicator of a house price. While other factors such as the river proximity (CHAS) or the nitrogen monoxide on air (NOX) do not seem that relevant.
+
+
+```{r pressure, echo=TRUE}
+# para ver los coef
+print(coef(lasso.1,s=cv.lasso.1$lambda.min))
+print(coef(lasso.1,s=cv.lasso.1$lambda.1se))
+```
+
+
+
+## Use glmnet to fit the previous model using ridge regression. Compare the 10-fold cross validation results from function cv.glmnet with those you obtained in the previous practice with your own functions.
+
+
+```{r}
+ridge.1 <- glmnet(X, Y, standardize=TRUE, intercept=FALSE, alpha = 0)
+# specify alpha = 0 for use Ridge regression not LASSO
+cv.ridge.1 <- cv.glmnet(X,Y, standardize=TRUE, intercept=FALSE, nfolds=10, alpha = 0)
+
+plot(cv.ridge.1)
+plot(ridge.1,xvar="lambda")
+abline(v=log(cv.ridge.1$lambda.min),col=2,lty=2)
+abline(v=log(cv.ridge.1$lambda.1se),col=2,lty=2)
+print(coef(ridge.1,s=cv.ridge.1$lambda.min))
+print(coef(ridge.1,s=cv.ridge.1$lambda.1se))
+```
+
+**Regression with our previous function:**
+```{r include=FALSE}
+#Ridge Regression k-fold cross validation function
+ridge_regression_k_fold_CV <- function(x.train, y.train, lambda.v, k){
+  
+  Y <- scale(y.train, center=TRUE, scale=FALSE)
+  X <- scale(as.matrix(x.train), center=TRUE, scale=TRUE)
+  n <- dim(X)[1]
+  p <- dim(X)[2]
+  XtX <- t(X)%*%X 
+  d2 <- eigen(XtX,symmetric = TRUE, only.values = TRUE)$values
+  n.lambdas <- length(lambda.v)
+  
+  #############
+  # Estimate coefficients and compute MSPE
+  #############
+  set.seed(123)
+  fold <- sample(1:k, nrow(x.train), replace = T)
+  PMSE.CV.H.lambda <- rep(0, n.lambdas)
+  for (l in 1:n.lambdas){
+    lambda <- lambda.v[l]
+    for (i in 1:k){
+      X.train <- X[fold!=i,]
+      Y.train <- Y[fold!=i,]
+      
+      n <- dim(X.train)[1]
+      p <- dim(X.train)[2]
+      
+      beta.path <- matrix(0,nrow=n.lambdas, ncol=p)
+      diag.H.lambda <- matrix(0,nrow=n.lambdas, ncol=n)
+      
+      XtX <- t(X.train)%*%X.train
+      
+      H.lambda.aux <- t(solve(XtX + lambda*diag(1,p))) %*% t(X.train) 
+      beta.path[l,] <-  H.lambda.aux %*% Y.train
+      H.lambda <- X.train %*% H.lambda.aux 
+      diag.H.lambda[l,] <- diag(H.lambda)
+      hat.Y <- X.train %*% beta.path[l,]
+      PMSE.CV.H.lambda[l] <- PMSE.CV.H.lambda[l] + sum(((Y.train-hat.Y)/(1-diag.H.lambda[l,]))^2)
+    }
+  PMSE.CV.H.lambda[l] <- PMSE.CV.H.lambda[l]/n
+  }
+  
+  #############
+  # plot MSPE
+  #############
+  df <- cbind(as.data.frame(PMSE.CV.H.lambda), as.data.frame(lambda.v))
+  plot_mspe <- ggplot(data = df, mapping = aes(x = log(1+lambda.v)-1, y = PMSE.CV.H.lambda)) +
+    geom_point() +
+    labs(x = "Lambda", 
+         y = "MSPE", 
+         title = "Ridge Regression k-fold CV MSPE depending on lambda") +
+    theme_bw()
+    
+  Min_PMSE.CV.H.lambda<-round(min(PMSE.CV.H.lambda),digits = 5)
+  lambda_pos<-which.min(PMSE.CV.H.lambda)
+  lambda_optima<- round(lambda.v[lambda_pos],5)
+  betas<- beta.path[l,]
+  
+  list_func <- list(plot_mspe, PMSE.CV.H.lambda,paste("Min. MSPE: ",Min_PMSE.CV.H.lambda),paste("Position of best lambda:",lambda_pos) ,paste("Value of best lambda:",lambda_optima),paste("Betas:",round(betas,5)))
+  
+  
+  #return
+  return(list_func)
+}
+```
+
+
+```{r}
+lambda.max <- 1e5
+n.lambdas <- 25
+lambda.v <- exp(seq(0,log(lambda.max+1),length=n.lambdas))-1
+  
+ridge_regression_k_fold_CV(X, Y, lambda.v, k = 10)[[5]]
+```
+
+
+We have obtained different Betas values with glmnet() and our function.
+Also the optimum lambda is in different position, we reach the minimum betas with the fifth lambda, however with glmnet() it reach at third position. Even though, the values of beta are different we see the same sign between both approach.
+
+To conclude, the difference in values could be because of the consistency of the glmnet packet.
+
+
+
+
+*A regression model with "p >> n"*
+
+
+
+
+
+## Use glmnet and cv.glmnet to obtain the Lasso estimation for regressing log.surv against expr. How many coefficient different from zero are in the Lasso estimator? Illustrate the result with two graphics.
+
+```{r echo=TRUE}
+express <- read.csv("journal.pbio.0020108.sd012.CSV",header=FALSE)
+surv <- read.csv("journal.pbio.0020108.sd013.CSV",header=FALSE)
+death <- (surv[,2]==1)
+log.surv <- log(surv[death,1]+.05)
+expr <- as.matrix(t(express[,death]))
+
+lasso.3 <- glmnet(expr, log.surv, standardize=TRUE, intercept=TRUE)
+cv.lasso.3 <- cv.glmnet(expr, log.surv, standardize=TRUE, intercept=TRUE, nfolds = 100)
+
+plot(cv.lasso.3)
+plot(lasso.3, xvar="lambda")
+abline(v=log(cv.lasso.3$lambda.min),col=2,lty=2)
+abline(v=log(cv.lasso.3$lambda.1se),col=2,lty=2)
+coef(lasso.3, s=cv.lasso.3$lambda.min)[which(coef(lasso.3, s=cv.lasso.3$lambda.min) != 0)]
+coef(lasso.3, s=cv.lasso.3$lambda.1se)[which(coef(lasso.3, s=cv.lasso.3$lambda.1se) != 0)]
+```
+
+
+When Lasso regression is estimated can be observed how in lambda min there are 44 coefficients different from zero. But, when it is done by lambda.1se it become zero in coefficients diffents from zero. Then the analysis will be done with the coefficients obtaint by lambda min. If it is not done for this way we can not go further the other regressions (because we only going to have the interception).
+
+
+## Compute the fitted values with the Lasso estimated model (you can use predict). Plot the observed values for the response variable against the Lasso fitted values.
+
+```{r}
+lasso.prediction <- predict(lasso.3, newx = expr, s=cv.lasso.3$lambda.min)
+
+plot(log.surv, lasso.prediction, pch = 20, col = "#00BCF4")
+abline(a=0,b=1,col=2)
+```
+
+
+In order to see if the regression fits right the response values the points should fit the red line. As we can see in the plot lasso regression do not do a great job fitting the response values.
+
+
+
+## Consider the set S0 of non-zero estimated Lasso coeffcients. Use OLS to fit a regression model with response log.surv and explanatory variables the columns of expr with indexes in S0. Plot the observed values for the response variable against the OLS fitted values.
+
+```{r}
+S0.expr <- expr[,(which(coef(lasso.3, s=cv.lasso.3$lambda.min) != 0))]
+S0.log.surv <- log.surv
+
+model.ols <- lm(S0.log.surv ~  (S0.expr))
+sum.ols <- summary(model.ols)
+
+# Plot the observed values for the response variable against the OLS fitted values.
+pred.OLS <- predict(model.ols, as.data.frame(S0.expr))
+
+plot(S0.log.surv, pred.OLS, col = "#00BCF4", pch = 20)
+abline(a=0,b=1,col=2)
+```
+
+In this case OLS do a better job than Lasso regression fitting the response values. The r-squared adjusted shows a 0.2655, it is not to high but better than Lasso.
+
+
+
+
+## Compare the OLS and Lasso estimated coefficient. Compare the OLS and Lasso fitted values. Do a plot for that.
+
+```{r}
+coef.ols <- sum.ols$coefficients # Coef of OLS
+
+# Coef of Lasso model:
+ncoef <- dim(coef.ols)[1]
+coef.Lasso <- coef(lasso.3, s=cv.lasso.3$lambda.min)[which(coef(lasso.3, s=cv.lasso.3$lambda.min) != 0)]
+cbind(as.data.frame(coef.ols[2:ncoef,1]), as.data.frame(coef.Lasso))[1:6,]
+
+# Do a plot for that.
+coef.ols.2<- coef.ols[2:(dim(coef.ols)[1]), 1]
+plot(coef.ols.2, coef.Lasso, xlab = "Coefficients OLS", 
+  ylab = "Coefficients LASSO", col = "#00BCF4", pch = 20)
+abline(a=0,b=1,col=2)
+```
+
+We can see how OLS and Lasso coefficients estimated are really different. To be similar should fit the points to the red line. Only when one of them are highly possitive or negative the sign of the coefficients are the same.
+
+To sum up, in this case OLS estimation do a better job in order to fit the response variable. But Lasso regression helps to do a variable selection and in this case it could help us to do a better estimations.
+
+
+
+
