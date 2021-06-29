@@ -1,0 +1,193 @@
+---
+title: "**GAMs for hirsutism data**"
+author:
+- "Geraldo Gariza, Jan Leyva and Andreu Meca"  
+- "Universitat Politècnica de Catalunya"
+date: "4th of April, 2021"
+output:
+  pdf_document: default
+  word_document: default
+fontsize: 12pt
+linestretch: 1.25
+toc-depth: 1
+header-includes:
+- \newcommand{\bcenter}{\begin{center}}
+- \newcommand{\ecenter}{\end{center}}
+---
+-----------------------------------------------------------------
+\pagenumbering{gobble}
+
+Fit several GAM models (including semiparametric models) explaining
+FGm12 as a function of the variables that were measured at the beginning
+of the clinical trial (including FGm0) and Treatment (treated as factor). Use
+functions summary, plot and vis.gamto get an insight into the ﬁtted models.
+Then use function anova to select among them the model (or models) that
+you think is (are) the most appropriate.
+
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, out.height=0.75}
+# setwd('~/Downloads')
+hirs <- read.table("hirsutism.dat",header=T, sep="\t",fill=TRUE)
+library(mgcv)
+
+
+summary(hirs)
+attach(hirs)
+
+```
+
+```{r echo=FALSE}
+#Let's explore the data:
+
+boxplot(hirs[,2:5])
+
+par(mfrow=c(2,2))
+boxplot(hirs[,2]~Treatment,ylim=c(0,30), main=names(hirs)[2], xlab="Treatment")
+boxplot(hirs[,3]~Treatment,ylim=c(0,30), main=names(hirs)[3], xlab="Treatment")
+boxplot(hirs[,4]~Treatment,ylim=c(0,30), main=names(hirs)[4], xlab="Treatment")
+boxplot(hirs[,5]~Treatment,ylim=c(0,30), main=names(hirs)[5], xlab="Treatment")
+par(mfrow=c(1,1))
+
+par(mfrow=c(2,2))
+boxplot(hirs[Treatment==0,2:5],ylim=c(0,30), main="Treatment 0")
+boxplot(hirs[Treatment==1,2:5],ylim=c(0,30), main="Treatment 1")
+boxplot(hirs[Treatment==2,2:5],ylim=c(0,30), main="Treatment 2")
+boxplot(hirs[Treatment==3,2:5],ylim=c(0,30), main="Treatment 3")
+par(mfrow=c(1,1))
+```
+
+
+```{r}
+## GAM models: -------------------------------------------------------------
+
+# Simples model: -----------------------------------------------------------
+gam_simple <- gam(FGm12 ~ (FGm0) + (Treatment) + (SysPres)
+             + (DiaPres) + (weight) + (height), 
+             data = hirs)
+
+summary(gam_simple) # 19 %
+
+# gam.check(gam_simple)
+```
+Using the simplest model, $GAM$ function explaining $FGm12$ as function of: 
+$(FGm0) + (Treatment) + (SysPres)+ (DiaPres) + (weight) + (height)$, we obtain only 19% of deviance explained. We should make some adjustment to the model.
+
+Also we see some irregularities in the Q-Q plot of residuals. The cues have some deviations.
+
+```{r}
+# Simple model 1: ----------------------------------------------------------
+gam_1 <- gam(FGm12 ~ s(FGm0) + (Treatment) + s(SysPres)
+          + s(DiaPres) + s(weight) + s(height), 
+            data = hirs)
+summary(gam_1) # 47 %
+
+# Plot
+
+plot(gam_1, select = 1, residuals = TRUE, se=FALSE)
+plot(gam_1,pages=1,residuals=TRUE,scheme=TRUE)
+
+# par(mfrow=c(2,2))
+# plot(gam_1, residuals = TRUE, shade=TRUE, seWithMean=TRUE, pages = 2)
+# par(mfrow=c(1,1))
+```
+
+
+Applying the `s()` function to the variables, except $Treatment$, we see a higher deviance explained: 47%. `s()` is referring to which explanatory variable we apply smoothing.
+
+```{r}
+# Simple model 2: ----------------------------------------------------------
+
+# `DiaPres` and `weight` have a large p-value so can be removed from the model.
+gam_2 <- gam(FGm12 ~ s(FGm0) + (Treatment) + 
+               s(SysPres) + s(height), 
+             data = hirs)
+summary(gam_2) # 35.9 %
+
+plot(gam_2, select = 1, residuals = TRUE, se=FALSE)
+plot(gam_2,pages=1,residuals=TRUE,scheme=TRUE)
+# plot(gam_2, residuals = TRUE, shade=TRUE, seWithMean=TRUE, pages = 3)
+```
+In model 2, we have removed two explanatory variables as they were non-significant, $DiaPres$ and $weight$, with $p.value>0.05$. Now, we see that all variables are significant but also the deviance explained of the model have decreased: 35,9%.
+
+```{r}
+# Simple model 3: ----------------------------------------------------------
+gam_3 <- gam(FGm12 ~ (Treatment) + 
+               s(SysPres) + s(height), 
+             data = hirs)
+summary(gam_3) # 33.4 %
+
+plot(gam_3, select = 1, residuals = TRUE, se=FALSE)
+plot(gam_3,pages=1,residuals=TRUE,scheme=TRUE)
+# plot(gam_3, residuals = TRUE, shade=TRUE, seWithMean=TRUE, pages = 7)
+```
+In the third model we are trying to see if removing the initial variable $FGm0$ we get better results. We would to show if we can explain the end result of the treatment without counting the initial level of hirsutism. We got slightly worse results with this model: 33,4%.
+
+
+```{r}
+# model 4: ----------------------------------------------------------------
+gam_4 <- gam(FGm12 ~ (Treatment) + 
+               s(SysPres) + s(height) + te(height,weight), 
+             data = hirs)
+summary(gam_4) # 46.1 %
+
+plot(gam_4, select = 1, residuals = TRUE, se=FALSE)
+plot(gam_4,pages=1,residuals=TRUE,scheme=TRUE)
+# plot(gam_4, residuals = TRUE, shade=TRUE, seWithMean=TRUE, pages = 7)
+
+```
+
+In this last model we use `te()` function to $height$ and $weight$. We use the tensor product smooth as this two variables tend to be correlated. The result is very satisfying: 46,1%.
+
+```{r,message=F,warning=F}
+# We are going to visualize the joint effect of the variables:
+
+par(mfrow=c(1,2))
+vis.gam(gam_4, view=c("height","weight"), plot.type = "persp", theta=30, phi=30)
+vis.gam(gam_4, view=c("height","weight"), plot.type = "contour")
+par(mfrow=c(1,1))
+```
+\newpage
+- **ANOVA:**
+
+Now we test the null hypothesis that states the `gam_simple`
+is correct again the alternative that states that the `gam_1` 
+model is better:
+
+```{r}
+anova(gam_simple, gam_1, test = 'F')
+```
+We reject the null hypothesis that `gam_simple` is better model than `gam_1`.
+
+Now we test the null hypothesis that states the second model
+is correct again the alternative that states that the gam_1
+is better:
+
+```{r}
+anova(gam_2, gam_1 , test = 'F')
+```
+We cannot reject h0, we do not have enough information, as the p-value > 0.05.
+
+
+```{r}
+anova(gam_3, gam_1, test = 'F')
+```
+
+
+```{r}
+anova(gam_4, gam_1, test = 'F')
+```
+```{r}
+anova(gam_3, gam_2, test = 'F')
+```
+
+Comparing model 2 and 3, being h0 model 3 fits better the data, we reject that with p-value at 5%.
+We continue comparing `gam_2`.
+
+```{r}
+anova(gam_2, gam_4, test = 'F')
+```
+```{r}
+anova(gam_3, gam_4, test = 'F')
+```
+We cannot choose between models 1,2,4. We can reject model 3 as ANOVA test was not significant against the other models. With the three remained We choose model 4 because of better explanation of the model with R-adjust 0.328 and explained variance 46.1%. 
