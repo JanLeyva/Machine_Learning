@@ -1,0 +1,127 @@
+---
+title: "**Assignment 1  \n  K-NN regression  \n**"
+author: "Andreu Meca, Geraldo Gariza, Victor Duque and Jan Leyva  \n   Universitat Politècnica de Catalunya" 
+output:
+  pdf_document: default
+  html_document: default
+
+date: "February 15, 2021"
+fontsize: 12pt
+linestretch: 1.5
+toc-depth: 1
+header-includes:
+- \newcommand{\bcenter}{\begin{center}}
+- \newcommand{\ecenter}{\end{center}}
+
+
+---
+
+
+```{r setup, include=TRUE, echo=F}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+\pagenumbering{gobble}
+
+\newpage
+
+
+\pagenumbering{arabic}
+
+
+\bcenter
+# K-NN regression
+\ecenter
+
+The k nearest-neighbor estimator of $m(t)$ = E(Y|X = $t$) is defined as
+
+$$\hat{m}(t)=\frac{1}{k}\sum_{i\in N_k(t)} y_i$$
+
+where N~k~($t$) is the neighborhood of $t$ defined by the $k$ closest points $x$~$i$~ in the training sample.
+
+### Boston housing data from library MASS:
+
+```{r echo=TRUE}
+library(MASS)
+help(Boston)
+data(Boston)
+x <- Boston$lstat
+y <- Boston$medv
+plot(x,y, pch = 10,col = "#00BCF4")
+```
+
+### 1. Write a function for computing the $k$-nn estimator of $m$($t$) for a given value of t $\in$ $R$.
+
+```{r echo=TRUE}
+k<-5
+t<-10
+# dist matrix of X's
+d_x   <- as.matrix(dist(rbind(t,as.matrix(x))))[1,-1]
+d_x_k <- sort(d_x, partial=k)[k]
+N_x_k <- unname( which(d_x <= d_x_k) )
+(hat_y = sum(y[N_x_k])/k)
+```
+
+\newpage
+#### Function $k$-nn for regression code
+```{r echo=TRUE}
+knn.reg <- function(t, x, y,  k=5){
+  d_x   <- as.matrix(dist(rbind(t,as.matrix(x))))[1,-1]
+  d_x_k <- sort(d_x, partial=k)[k]
+  N_x_k <- unname( which(d_x <= d_x_k) )
+  return(hat_y = sum(y[N_x_k])/k)
+}
+```
+
+
+### 2. Then, define t as a sequence from 1 to 40: t <- 1:40.
+```{r}
+t <- 1:40
+```
+
+### 3. Estimate $m$(t[i]) for $i$ = 1,...,40 using $k$ = 50.
+```{r echo=TRUE}
+nt <- length(t)
+hat_p <- matrix(0,1,ncol=nt)
+
+for (i in 1:nt){
+    hat_p[,i] <- knn.reg(t[i], x=x, y=y, k = 50)
+}
+```
+
+\newpage
+### 4. Plot y against x. Then represent the estimated regression function.
+```{r  echo=TRUE}
+plot(x, y, pch = 10,xlab = "lstat", ylab = "medv", col = "#00BCF4")
+points(t, hat_p, col="#F8766D" , lwd=3 , pch=19 , type= "l")
+points(t, hat_p, col="#F8766D" , lwd=3 , pch=19 , lty = "dashed", type= "b")
+title("K-NN regression [K = 50]")
+```
+\newpage
+
+### 5. Repeat the same exercise using different values of $k$.
+```{r  echo=TRUE, figures-side, fig.show="hold", out.width="50%"}
+for (n in 1:10) {
+  a <- seq(from = 1, to = 55, by = 6)
+  b <- seq(from = 6, to = 60, by = 6)
+  k <- seq(a[n],b[n], by = 2)
+  t <- 1:40
+  hat_p.2 <- matrix(0,1, ncol = length(k), nrow = length(t))
+  
+  for (i in 1:length(t)) {
+    for (j in 1:length(k)) {
+      hat_p.2[i,j] <- knn.reg(t[i], x=x, y=y, k = k[j])
+    }
+  }
+  # Plot all:
+  par(mar = c(4, 4, 1.5, 1.5))
+    for (i in 1:length(k)) {
+      plot(x, y, pch = 10,xlab = "lstat", ylab = "medv", col = "#00BCF4")
+      points(t, as.matrix(hat_p.2[,i]), col="#F8766D" , lwd=3 , pch=19 , type= "l")
+      points(t, hat_p.2[,i], col="#F8766D" , lwd=3 , pch=19 , type= "b")
+      title(paste("K =", k[i]))
+    }
+}
+```
+
+
